@@ -1,15 +1,25 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");  // 
 const { PrismaClient } = require("@prisma/client");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
 const app = express();
 const prisma = new PrismaClient();
 const SECRET_KEY = process.env.SECRET_KEY;
+
+// CORS
+app.use(cors({
+  origin: "*", 
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(bodyParser.json());
 
-//registro
+// Rota de Registro
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
   try {
@@ -23,7 +33,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-//login
+// Rota de Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -38,7 +48,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-//autenticação
+// Middleware de Autenticação
 const authenticate = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Acesso negado" });
@@ -51,7 +61,7 @@ const authenticate = (req, res, next) => {
   }
 };
 
-//listar usuários (somente autenticados)
+// Rota para Listar Usuários (somente autenticados)
 app.get("/users", authenticate, async (req, res) => {
   const users = await prisma.user.findMany({
     select: { name: true, email: true },
@@ -61,5 +71,5 @@ app.get("/users", authenticate, async (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });

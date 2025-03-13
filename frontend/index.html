@@ -1,12 +1,22 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Repúblicas IFNMG</title>
+    <title>Login - Anuncie sua Moradia</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    
+    <div class="caixa">
+        <h2 id="titulo-formulario">Login</h2>
+        <form id="form-autenticacao">
+            <input type="text" id="nome" placeholder="Nome" style="display: none;">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+        <button class="alternar" id="botao-alternar">Criar conta</button>
+    </div>
+    <script src="assets/js/script.js"></script>
 </body>
 </html>
