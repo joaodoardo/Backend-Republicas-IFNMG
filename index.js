@@ -1,6 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");  // 
+const cors = require("cors");  
 const { PrismaClient } = require("@prisma/client");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
@@ -10,7 +10,7 @@ const app = express();
 const prisma = new PrismaClient();
 const SECRET_KEY = process.env.SECRET_KEY;
 
-// CORS
+//CORS
 app.use(cors({
   origin: "*", 
   methods: ["GET", "POST"],
@@ -19,7 +19,7 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// Rota de Registro
+//Registro
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
   try {
@@ -33,7 +33,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// Rota de Login
+//Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -48,7 +48,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Middleware de Autenticação
+//Middleware de Autenticação
 const authenticate = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Acesso negado" });
@@ -61,12 +61,27 @@ const authenticate = (req, res, next) => {
   }
 };
 
-// Rota para Listar Usuários (somente autenticados)
-app.get("/users", authenticate, async (req, res) => {
-  const users = await prisma.user.findMany({
-    select: { name: true, email: true },
-  });
-  res.json(users);
+//adicionar uma República (somente logado)
+app.post("/republicas", authenticate, async (req, res) => {
+  const { titulo, descricao, bairro, rua, numero, complemento, valorMensal, vagas } = req.body;
+  try {
+    const republica = await prisma.republica.create({
+      data: { titulo, descricao, bairro, rua, numero, complemento, valorMensal, vagas }
+    });
+    res.status(201).json({ message: "República adicionada com sucesso!" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+//listar todas as repúblicas 
+app.get("/republicas", async (req, res) => {
+  try {
+    const republicas = await prisma.republica.findMany();
+    res.json(republicas);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar repúblicas" });
+  }
 });
 
 const PORT = 3000;

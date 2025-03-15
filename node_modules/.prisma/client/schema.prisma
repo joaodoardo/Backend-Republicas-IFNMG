@@ -14,3 +14,16 @@ model User {
   password  String
   createdAt DateTime @default(now())
 }
+
+model Republica {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  descricao   String
+  bairro      String
+  rua         String
+  numero      Int
+  complemento String
+  valorMensal Float
+  vagas       Int
+  createdAt   DateTime @default(now())
+}
