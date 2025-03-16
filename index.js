@@ -5,19 +5,31 @@ const { PrismaClient } = require("@prisma/client");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 const app = express();
 const prisma = new PrismaClient();
 const SECRET_KEY = process.env.SECRET_KEY;
 
+app.use(bodyParser.json());
+
 //CORS
 app.use(cors({
   origin: "*", 
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-app.use(bodyParser.json());
+//Middleware de Autenticação
+const authenticate = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Acesso negado" });
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: "Token inválido" });
+  }
+};
 
 //Registro
 app.post("/register", async (req, res) => {
@@ -48,25 +60,12 @@ app.post("/login", async (req, res) => {
   }
 });
 
-//Middleware de Autenticação
-const authenticate = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "Acesso negado" });
-  try {
-    const decoded = jwt.verify(token, SECRET_KEY);
-    req.userId = decoded.userId;
-    next();
-  } catch (error) {
-    res.status(401).json({ error: "Token inválido" });
-  }
-};
-
-//adicionar uma República (somente logado)
+//Adicionar uma República (somente logado)
 app.post("/republicas", authenticate, async (req, res) => {
   const { titulo, descricao, bairro, rua, numero, complemento, valorMensal, vagas } = req.body;
   try {
     const republica = await prisma.republica.create({
-      data: { titulo, descricao, bairro, rua, numero, complemento, valorMensal, vagas }
+      data: { titulo, descricao, bairro, rua, numero, complemento, valorMensal, vagas, userId: req.userId }
     });
     res.status(201).json({ message: "República adicionada com sucesso!" });
   } catch (error) {
@@ -74,7 +73,31 @@ app.post("/republicas", authenticate, async (req, res) => {
   }
 });
 
-//listar todas as repúblicas 
+//Deletar uma república (somente o criador pode excluir)
+app.delete("/republicas/:id", authenticate, async (req, res) => {
+  const republicaId = parseInt(req.params.id);
+
+  try {
+    const republica = await prisma.republica.findUnique({
+      where: { id: republicaId },
+    });
+
+    if (!republica) {
+      return res.status(404).json({ error: "República não encontrada" });
+    }
+
+    if (republica.userId !== req.userId) {
+      return res.status(403).json({ error: "Você não tem permissão para excluir esta república" });
+    }
+
+    await prisma.republica.delete({ where: { id: republicaId } });
+    res.json({ message: "República excluída com sucesso" });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao excluir república" });
+  }
+});
+
+//Listar todas as repúblicas 
 app.get("/republicas", async (req, res) => {
   try {
     const republicas = await prisma.republica.findMany();
