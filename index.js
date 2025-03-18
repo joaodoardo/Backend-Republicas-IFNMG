@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 //CORS
 app.use(cors({
   origin: "*", 
-  methods: ["GET", "POST", "DELETE"],
+  methods: ["GET", "POST", "DELETE", "PUT"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
@@ -94,6 +94,35 @@ app.delete("/republicas/:id", authenticate, async (req, res) => {
     res.json({ message: "República excluída com sucesso" });
   } catch (error) {
     res.status(500).json({ error: "Erro ao excluir república" });
+  }
+});
+
+//Atualizar uma república (somente o criador pode atualizar)
+app.put("/republicas/:id", authenticate, async (req, res) => {
+  const republicaId = parseInt(req.params.id);
+  const { titulo, descricao, bairro, rua, numero, complemento, valorMensal, vagas } = req.body;
+
+  try {
+    const republica = await prisma.republica.findUnique({
+      where: { id: republicaId },
+    });
+
+    if (!republica) {
+      return res.status(404).json({ error: "República não encontrada" });
+    }
+
+    if (republica.userId !== req.userId) {
+      return res.status(403).json({ error: "Você não tem permissão para atualizar esta república" });
+    }
+
+    const republicaAtualizada = await prisma.republica.update({
+      where: { id: republicaId },
+      data: { titulo, descricao, bairro, rua, numero, complemento, valorMensal, vagas }
+    });
+
+    res.json({ message: "República atualizada com sucesso!"});
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao atualizar república" });
   }
 });
 

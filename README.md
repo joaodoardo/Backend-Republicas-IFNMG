@@ -1,7 +1,7 @@
 # Backend Repúblicas IFNMG 🏡📚
 
 ## 👨‍🎓 Autores
-**João Eduardo Ferreira Souza & Givanildo Barbosa Souza Filho**
+**João Eduardo Ferreira Souza & Givanildo Barbosa Sousa Filho & Luiz Felipe Pereira Lima**
 
 ## 📚 Descrição e Objetivo
 Este projeto é um backend desenvolvido em **Node.js** com **Express.js** e **Prisma ORM** para um site feito para anunciar repúblicas estudantis do **IFNMG**. O sistema permite que usuários cadastrem repúblicas, visualizem repúblicas cadastradas e atualizem ou excluam suas próprias repúblicas.
@@ -49,6 +49,7 @@ Este projeto é um backend desenvolvido em **Node.js** com **Express.js** e **Pr
 │   ├── schema.prisma
 ├── .env
 ├── index.js
+├── LICENSE
 ├── package.json
 ├── README.md
 ```
